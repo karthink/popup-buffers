@@ -1,10 +1,20 @@
 * Popup Buffers
 
-A hacked together  solution to handle annoying popups in  Emacs. Only works well
+A hacked together minor-mode to handle annoying popups in  Emacs. Only works well
 in conjunction  with some system to  handle window creation and  placement, like
-=shackle.el=.  This plugin  summons windows  defined by  the user  as "popups"  by
+=shackle.el=. This plugin  summons windows  defined by  the user  as "popups"  by
 simply calling =display-buffer=.
 
+Designate any buffer (by name or major-mode) as a popup, and you can dismiss and summon it easily with one key. Useful for bringing up shells:
+[[file:images/popup-buffers-toggle-latest.gif]]
+
+Or you can cycle through all your popups:
+[[file:images/popup-buffers-cycle.gif]]
+
+Demote a regular window to popup status:
+[[file:images/popup-buffers-demote.gif]]
+
+Or promote a popup to regular window (currently borked).
 * Customization
 There is only one variable to customize at the moment:
 
@@ -12,9 +22,9 @@ There is only one variable to customize at the moment:
 
   Example: 
 
-  ='("*Messages\\*" "Output\\*$" help-mode compilation-mode)=
+  ='("\\\*Messages\\\*" "Output\\\*$" help-mode compilation-mode)=
 
-  Will match against the Messages buffer, any buffer ending in "Output*", and all help and compilation buffers.
+  Will treat these as popups: The Messages buffer, any buffer ending in "Output*", and all help and compilation buffers.
 * Setup (with =use-package=)
 
 #+BEGIN_SRC emacs-lisp
