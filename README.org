@@ -1,6 +1,6 @@
 * Popup Buffers
 
-A hacked together minor-mode to handle annoying popups in  Emacs. Only works well
+A minor-mode to handle annoying windows in Emacs. Only works well
 in conjunction  with some system to  handle window creation and  placement, like
 =shackle.el=. This plugin  summons windows  defined by  the user  as "popups"  by
 simply calling =display-buffer=.
@@ -43,7 +43,10 @@ There is only one variable to customize at the moment:
   Example: 
 
   #+BEGIN_SRC emacs-lisp
-  '("\\\*Messages\\\*" "Output\\\*$" help-mode compilation-mode)
+    '("\\\*Messages\\\*"
+      "Output\\\*$"
+      help-mode
+      compilation-mode)
   #+END_SRC
 
   Will treat the following as popups: The Messages buffer, any buffer ending in "Output*", and all help and compilation buffers.

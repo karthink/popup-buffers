@@ -50,9 +50,13 @@
 
 (defcustom popup-buffers-reference-buffers '("*Messages*$")
   "List of buffers to treat as popups. Each entry in the list can be a regexp (string) to match buffer names against, or a major-mode (symbol) to match buffer major-modes against.
-Example: 
 
-'(\"*Messages*\" \"Output*$\" help-mode compilation-mode)
+Example:
+
+'(\"*Messages*\" 
+  \"Output*$\"
+  help-mode
+  compilation-mode)
 
 Will match against the Messages buffer, any buffer ending in Output*, and all help and compilation buffers."
   :type '(restricted-sexp :match-alternatives (stringp symbolp))
@@ -99,7 +103,8 @@ window without switching to it."
 
 ;;;###autoload
 (defun popup-buffers-find-open-popups ()
-  "Return an alist of (window . buffer) corresponding to open popup buffers."
+  "Return an alist of (window . buffer) corresponding to open
+popup buffers."
   ;; TODO: use buffer-display-time to get timestamps
   (let* ((open-buffers (mapcar #'window-buffer (window-list)))
          open-popups)
@@ -185,7 +190,8 @@ popup buffers."
 
 ;;;###autoload
 (defun popup-buffers-toggle-latest (&optional arg)
-  "Toggle visibility of the last opened popup window. With prefix argument ARG, toggle all popup windows"
+  "Toggle visibility of the last opened popup window. With prefix
+argument ARG, toggle all popup windows"
   (interactive "P")
   (if popup-buffers-open-buffer-window-alist
       (if arg
@@ -200,7 +206,8 @@ popup buffers."
 
 ;;;###autoload
 (defun popup-buffers-cycle (&optional arg)
-  "Cycle visibility of popup windows one at a time. With a prefix argument ARG, cycle in the opposite direction."
+  "Cycle visibility of popup windows one at a time. With a prefix
+argument ARG, cycle in the opposite direction."
   (interactive "p")
   ;; (setq popup-buffers--toggle-state
   ;;       (not popup-buffers--toggle-state))
