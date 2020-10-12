@@ -5,14 +5,21 @@ in conjunction  with some system to  handle window creation and  placement, like
 =shackle.el=. This plugin  summons windows  defined by  the user  as "popups"  by
 simply calling =display-buffer=.
 
-Designate any buffer (by name or major-mode) as a popup, and you can dismiss and summon it easily with one key. Useful for bringing up shells:
+Pre-designate any buffer (by name or major-mode) as a popup, and it will stay out of your way.  Dismiss and summon it easily with one key. Useful for many things, including bringing up shells:
+#+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-toggle-latest.gif]]
 
 Or you can cycle through all your popups:
+#+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-cycle.gif]]
 
 Demote a regular window to popup status:
+#+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-demote.gif]]
+
+Toggle all your popups:
+#+ATTR_HTML: :width 500px
+[[file:images/popup-buffers-toggle-all.gif]]
 
 Or promote a popup to regular window (currently borked).
 * Customization
@@ -22,7 +29,7 @@ There is only one variable to customize at the moment:
 
   Example: 
 
-  ='("\\\*Messages\\\*" "Output\\\*$" help-mode compilation-mode)=
+  ~'("\\\*Messages\\\*" "Output\\\*$" help-mode compilation-mode)~
 
   Will treat these as popups: The Messages buffer, any buffer ending in "Output*", and all help and compilation buffers.
 * Setup (with =use-package=)
