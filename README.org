@@ -1,0 +1,32 @@
+* Popup Buffers
+
+A hacked together  solution to handle annoying popups in  Emacs. Only works well
+in conjunction  with some system to  handle window creation and  placement, like
+=shackle.el=.  This plugin  summons windows  defined by  the user  as "popups"  by
+simply calling =display-buffer=.
+
+* Customization
+There is only one variable to customize at the moment:
+
+- =popup-buffers-reference-buffers=: List of buffers to treat as popups. Each entry in the list can be a regexp (string) to match buffer names against, or a major-mode (symbol) to match buffer major-modes against.
+
+  Example: 
+
+  ='("*Messages\\*" "Output\\*$" help-mode compilation-mode)=
+
+  Will match against the Messages buffer, any buffer ending in "Output*", and all help and compilation buffers.
+* Setup (with =use-package=)
+
+#+BEGIN_SRC emacs-lisp
+    (use-package popup-buffers
+      :bind (("C-`" . popup-buffers-toggle-latest)
+             ("M-`" . popup-buffers-cycle))
+      :init
+      (setq popup-buffers-reference-buffers
+            '("\\*Messages\\*"
+              "Output\\*$"
+              help-mode
+              compilation-mode))
+
+      (popup-buffers-mode +1))
+#+END_SRC
