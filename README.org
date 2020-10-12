@@ -6,18 +6,22 @@ in conjunction  with some system to  handle window creation and  placement, like
 simply calling =display-buffer=.
 
 Pre-designate any buffer (by name or major-mode) as a popup, and it will stay out of your way.  Dismiss and summon it easily with one key. Useful for many things, including bringing up shells:
+#+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-toggle-latest.gif]]
 
 Or you can cycle through all your popups:
+#+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-cycle.gif]]
 
 Demote a regular window to popup status:
+#+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-demote.gif]]
 
 Toggle all your popups:
+#+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-toggle-all.gif]]
 
