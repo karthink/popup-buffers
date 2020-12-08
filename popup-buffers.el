@@ -81,7 +81,7 @@ Will match against the Messages buffer, any buffer ending in Output*, and all he
   "Current state of latest popup. Aternates between nil and t.")
 
 ;;;###autoload
-(defun +helper-window-mode-line-format ()
+(defun popup-buffers-mode-line-format ()
     "Mode-line format for helper (popup) windows"
   (list " "
         (when (bound-and-true-p winum-format)
@@ -98,7 +98,7 @@ window without switching to it."
    '((side . bottom)
     (slot . 1)
     (window-height . (lambda (win) (fit-window-to-buffer win (/ (frame-height) 3))))
-    (window-parameters . ((mode-line-format . (:eval (+helper-window-mode-line-format))))))
+    (window-parameters . ((mode-line-format . (:eval (popup-buffers-mode-line-format))))))
    ))
 
 ;;;###autoload
@@ -258,10 +258,7 @@ details on how to designate buffer types as popups."
   :version "0.15"
   :lighter ""
   :group 'popup-buffers
-  :keymap (let ((map (make-sparse-keymap)))
-	    (define-key map (kbd "C-`") 'popup-buffers-toggle-latest)
-	    (define-key map (kbd "M-`") 'popup-buffers-cycle)
-	    map)
+  :keymap (let ((map (make-sparse-keymap))) map)
   (if popup-buffers-mode
       ;; Turning the mode ON
       (progn
