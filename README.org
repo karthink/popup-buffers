@@ -50,10 +50,12 @@ There is only one variable to customize at the moment:
   #+END_SRC
 
   Will treat the following as popups: The Messages buffer, any buffer ending in "Output*", and all help and compilation buffers.
-* Setup (with =use-package=)
-
+* Setup 
+=popup-buffers= is not part of any package archive, so you will need to ensure it's on the Emacs =load-path= somewhere.
+** With =use-package=
 #+BEGIN_SRC emacs-lisp
     (use-package popup-buffers
+      :load-path "/path/to/popup-buffers/"                                   
       :bind (("C-`" . popup-buffers-toggle-latest)
              ("M-`" . popup-buffers-cycle))
       :init
@@ -62,6 +64,17 @@ There is only one variable to customize at the moment:
               "Output\\*$"
               help-mode
               compilation-mode))
-
       (popup-buffers-mode +1))
+#+END_SRC
+** General
+#+BEGIN_SRC emacs-lisp
+  (require 'popup-buffers)
+  (setq popup-buffers-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+          help-mode
+          compilation-mode))
+  (global-set-key (kbd "C-`") 'popup-buffers-toggle-latest)  
+  (global-set-key (kbd "M-`") 'popup-buffers-cycle)  
+  (popup-buffers-mode +1)
 #+END_SRC
