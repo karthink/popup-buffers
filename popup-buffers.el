@@ -68,8 +68,8 @@ Will match against the Messages buffer, any buffer ending in Output*, and all he
 (defvar popup-buffers-reference-modes nil
  "List of buffer major-modes whose buffers are treated as popups.")
 
-(defvar popup-buffers--user-buffers-alist nil
-  "Alist of buffers designated by the user as popups.")
+;; (defvar popup-buffers--user-buffers-alist nil
+;;   "Alist of buffers designated by the user as popups.")
 
 (defvar popup-buffers-open-buffer-window-alist nil
   "Alist of currently live (window . buffer)s that are treated as popups.")
@@ -79,6 +79,10 @@ Will match against the Messages buffer, any buffer ending in Output*, and all he
 
 (defvar popup-buffers--toggle-state nil
   "Current state of latest popup. Aternates between nil and t.")
+
+(defvar-local popup-buffers-popup-status nil
+  "Identifies a buffer as a popup by its buffer-local value.
+  Valid values are 'popup, 'raised or nil.")
 
 ;;;###autoload
 (defun popup-buffers-mode-line-format ()
@@ -90,7 +94,7 @@ Will match against the Messages buffer, any buffer ending in Output*, and all he
         mode-line-buffer-identification))
 
 ;;;###autoload
-(defun +display-popup-in-side-window (buffer &optional alist)
+(defun popup-buffers-display-popup-in-side-window (buffer &optional alist)
   "Display a popup-buffer at the bottom of the screen in a side
 window without switching to it."
   (display-buffer-in-side-window
@@ -98,56 +102,89 @@ window without switching to it."
    '((side . bottom)
     (slot . 1)
     (window-height . (lambda (win) (fit-window-to-buffer win (/ (frame-height) 3))))
-    (window-parameters . ((mode-line-format . (:eval (popup-buffers-mode-line-format))))))
-   ))
+    (window-parameters . ((mode-line-format . (:eval (popup-buffers-mode-line-format))))))))
+
+(defun popup-buffers-popup-p (buf)
+  "Test if buffer BUF meets the criteria listed in
+`popup-buffers-reference-buffers'."
+  (or (seq-some (lambda (buf-regexp)
+               (string-match-p buf-regexp (buffer-name buf)))
+             popup-buffers-reference-names)
+      (member (buffer-local-value 'major-mode buf) popup-buffers-reference-modes)
+      ;; (member buf popup-buffers--user-buffers-alist)
+      ))
 
 ;;;###autoload
-(defun popup-buffers-find-open-popups ()
-  "Return an alist of (window . buffer) corresponding to open
-popup buffers."
-  ;; TODO: use buffer-display-time to get timestamps
-  (let* ((open-buffers (mapcar #'window-buffer (window-list)))
-         open-popups)
-    (dolist (b open-buffers open-popups)
-      (if (or (seq-some (lambda (buf-regexp)
-                          (string-match-p buf-regexp (buffer-name b)))
-                        popup-buffers-reference-names)
-              (member (buffer-local-value 'major-mode b) popup-buffers-reference-modes)
-              (member b popup-buffers--user-buffers-alist))
-          ;; (add-to-list 'open-popups (cons (get-buffer-window b) b))
+(defun popup-buffers-find-popups (test-buffer-list)
+  "Return an alist of (window . buffer) corresponding to
+popup-buffers in list of buffers TEST-BUFFER-LIST."
+  (let* (open-popups)
+    (dolist (b test-buffer-list open-popups)
+      (let ((popup-status (buffer-local-value 'popup-buffers-popup-status b)))
+        (when (and (not (minibufferp b))
+                   (not (eq popup-status 'raised))
+                   (or (member popup-status '(popup special))
+                       (popup-buffers-popup-p b)))
+          (with-current-buffer b
+            (setq popup-buffers-popup-status (or popup-status
+                                                 'popup)))
           (push (cons (get-buffer-window b) b)
-                open-popups)))))
+                open-popups))))))
+
+;;;###autoload
+;; (defun popup-buffers-find-open-popups ()
+;;   "Return an alist of (window . buffer) corresponding to open
+;; popup buffers."
+;;   ;; TODO: use buffer-display-time to get timestamps
+;;   (let* ((open-buffers (mapcar #'window-buffer (window-list)))
+;;          open-popups)
+;;     (dolist (b open-buffers open-popups)
+;;       (let ((popup-status (buffer-local-value 'popup-buffers-popup-status b)))
+;;         (when (and (not (minibufferp b))
+;;                    (not (eq popup-status 'raised))
+;;                    (or (member popup-status '(popup special))
+;;                        (popup-buffers-popup-p b)))
+;;           (with-current-buffer b
+;;             (setq popup-buffers-popup-status (or popup-status
+;;                                                  'popup)))
+;;           (push (cons (get-buffer-window b) b)
+;;                 open-popups))))))
 
 ;;;###autoload
 (defun popup-buffers-update-open-popups ()
   "Update the list of currently open popups."
-  (setq popup-buffers--user-buffers-alist
-        (cl-delete-if-not (lambda (buf) (buffer-live-p buf))
-                       popup-buffers--user-buffers-alist))
+  ;; (setq popup-buffers--user-buffers-alist
+  ;;       (cl-delete-if-not (lambda (buf) (buffer-live-p buf))
+  ;;                      popup-buffers--user-buffers-alist))
   (setq popup-buffers-open-buffer-window-alist
-        (nreverse (popup-buffers-find-open-popups))))
+        (nreverse (popup-buffers-find-popups
+                   (mapcar #'window-buffer (window-list))))))
 
 ;;;###autoload
-(defun popup-buffers-find-buried-popups ()
-  "Return an alist of (window . buffer) corresponding to buried
-popup buffers."
-  (let* ((open-buffers (mapcar #'window-buffer (window-list)))
-         buried-popups)
-    (dolist (b (cl-set-difference (buffer-list) open-buffers) buried-popups)
-      (if (and (not (minibufferp b))
-               (or (seq-some (lambda (buf-regexp)
-                               (string-match-p buf-regexp (buffer-name b)))
-                             popup-buffers-reference-names)
-                   (member (buffer-local-value 'major-mode b) popup-buffers-reference-modes)
-                   (member b popup-buffers--user-buffers-alist)))
-          (push (cons (get-buffer-window b) b)
-                buried-popups)))))
+;; (defun popup-buffers-find-buried-popups ()
+;;   "Return an alist of (window . buffer) corresponding to buried
+;; popup buffers."
+;;   (let* ((open-buffers (mapcar #'window-buffer (window-list)))
+;;          buried-popups)
+;;     (dolist (b (cl-set-difference (buffer-list) open-buffers) buried-popups)
+;;       (if (and (not (minibufferp b))
+;;                (or (let ((status (buffer-local-value 'popup-buffers-popup-status b)))
+;;                      (or (eq status 'popup)
+;;                          (eq status 'special)))
+;;                    (popup-buffers-popup-p b)
+;;                    ;; (member b popup-buffers--user-buffers-alist)
+;;                    ))
+;;           (push (cons (get-buffer-window b) b)
+;;                 buried-popups)))))
 
 ;;;###autoload
 (defun popup-buffers-update-buried-popups ()
   "Update the list of currently buried popups."
   (setq popup-buffers-buried-buffer-window-alist
-        (popup-buffers-find-buried-popups)))
+        (popup-buffers-find-popups
+         (cl-set-difference (buffer-list)
+                            (mapcar #'window-buffer
+                                    (window-list))))))
 
 ;;;###autoload
 (defun popup-buffers-close-latest ()
@@ -209,19 +246,16 @@ argument ARG, toggle all popup windows"
   "Cycle visibility of popup windows one at a time. With a prefix
 argument ARG, cycle in the opposite direction."
   (interactive "p")
-  ;; (setq popup-buffers--toggle-state
-  ;;       (not popup-buffers--toggle-state))
-  (if (and (not (null (cdr popup-buffers-buried-buffer-window-alist)))
-           (equal last-command 'popup-buffers-cycle))
-      ;; cycle through buffers: rest of logic
-      (progn (popup-buffers-close-latest)
-             (let ((bufs popup-buffers-buried-buffer-window-alist))
-               (setq popup-buffers-buried-buffer-window-alist
-                     (nconc (last bufs) (butlast bufs)))
-               (popup-buffers-open-latest)))
-    ;; starting new cycle, so bury everything first.
-    (if (null popup-buffers-open-buffer-window-alist)
-        (popup-buffers-open-latest)
+  (if (null popup-buffers-open-buffer-window-alist)
+      (popup-buffers-open-latest)
+    (if (not (null popup-buffers-buried-buffer-window-alist))
+        ;; cycle through buffers: rest of logic
+        (progn (popup-buffers-close-latest)
+               (let ((bufs popup-buffers-buried-buffer-window-alist))
+                 (setq popup-buffers-buried-buffer-window-alist
+                       (append (cdr bufs) (cons (car bufs) nil)))
+                 (popup-buffers-open-latest)))
+      ;; starting new cycle, so bury everything first.
       (popup-buffers-bury-all))))
 
 ;;;###autoload
@@ -230,22 +264,31 @@ argument ARG, cycle in the opposite direction."
 raise the current buffer."
   (interactive)
   (let ((buf (get-buffer (or buffer (current-buffer)))))
-    (setq popup-buffers--user-buffers-alist
-          (delete buf popup-buffers--user-buffers-alist))
+    (with-current-buffer buf
+      (setq popup-buffers-popup-status (and (popup-buffers-popup-p buf)
+                                            'raised)))
+    ;; (setq popup-buffers--user-buffers-alist
+    ;;       (delete buf popup-buffers--user-buffers-alist))
     (delete-window (get-buffer-window buf))
     ;; (popup-buffers-update-open-popups)
-    (display-buffer-at-bottom
-     buf '((window-height . 0.50)
-           (window-parameters . ((mode-line-format . mode-line-format)))))))
+    (display-buffer buf)
+    ;; (display-buffer-at-bottom
+    ;;  buf '((window-height . 0.50)
+    ;;        (window-parameters . ((mode-line-format . mode-line-format)))))
+    ))
 
 ;;;###autoload
 (defun popup-buffers-lower-to-popup (&optional buffer)
   "Turn a regular window into a popup"
   (interactive)
   (let ((buf (get-buffer (or buffer (current-buffer)))))
+    (with-current-buffer buf
+      (setq popup-buffers-popup-status (if (popup-buffers-popup-p buf)
+                                           'popup
+                                         'special)))
     (delete-window (get-buffer-window buf t))
-    (+display-popup-in-side-window buf)
-    (push buf popup-buffers--user-buffers-alist)
+    (display-buffer buf)
+    ;; (push buf popup-buffers--user-buffers-alist)
     (popup-buffers-update-open-popups)))
 
 ;;;###autoload
@@ -268,19 +311,19 @@ details on how to designate buffer types as popups."
               (cl-remove-if-not #'symbolp popup-buffers-reference-buffers))
         (popup-buffers-update-buried-popups)
         (popup-buffers-update-open-popups)
-        (add-hook 'window-configuration-change-hook 'popup-buffers-update-buried-popups)
         (add-hook 'window-configuration-change-hook 'popup-buffers-update-open-popups)
         (add-to-list 'display-buffer-alist
                      '((lambda (buf act) (let ((buffer (if (bufferp buf) buf (get-buffer buf))))
-                                      (member buffer popup-buffers--user-buffers-alist)))
-                       (+display-popup-in-side-window))))
+                                      (with-current-buffer buf
+                                        (eq popup-buffers-popup-status 'special))))
+                       (popup-buffers-display-popup-in-side-window))))
     ;; Turning the mode OFF
-    (remove-hook 'window-configuration-change-hook 'popup-buffers-update-buried-popups)
     (remove-hook 'window-configuration-change-hook 'popup-buffers-update-open-popups)
     (delete
      '((lambda (buf act) (let ((buffer (if (bufferp buf) buf (get-buffer buf))))
-                      (member buffer popup-buffers--user-buffers-alist)))
-       (+display-popup-in-side-window))
+                      (with-current-buffer buf
+                        (eq popup-buffers-popup-status 'special))))
+       (popup-buffers-display-popup-in-side-window))
      display-buffer-alist)))
 
 (provide 'popup-buffers)
