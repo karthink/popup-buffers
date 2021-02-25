@@ -33,8 +33,7 @@
 ;;
 ;; popup-buffers-toggle-latest : Toggle latest popup
 ;; popup-buffers-cycle         : Cycle through all popups, or close all open popups
-;; popup-buffers-open-latest   : Open latest popup
-;; popup-buffers-close-latest  : Close latest popup
+;; popup-buffers-toggle-type   : Turn a regular window into a popup or vice-versa
 ;;
 ;; CUSTOMIZATION:
 ;;
@@ -265,7 +264,8 @@ the screen by `display-buffer' will not all be displayed."
   "Toggle visibility of the last opened popup window.
 
 With prefix arg C-u, toggle visibility of the next popup windows
-while keeping the current one (Note: This is currently bugged.)
+while keeping the current one (FIXME: This behavior can be
+inconsistent.)
 
 With a double prefix arg C-u C-u, toggle all popup-windows. Note
 that only one buffer can be show in one 'slot', so it will
@@ -325,7 +325,7 @@ If BUFFER is not specified,raise the current buffer."
     (popup-buffers-update-popups)))
 
 ;;;###autoload
-(defun popup-buffers-toggle-state (&optional buffer)
+(defun popup-buffers-toggle-type (&optional buffer)
   "Turn a popup into a regular window or vice-versa."
   (interactive)
   (let* ((buf (get-buffer (or buffer (current-buffer))))

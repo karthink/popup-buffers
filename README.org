@@ -1,32 +1,35 @@
 * Popup Buffers
 
-A minor-mode to handle annoying windows in Emacs. Works well in conjunction with
-some system to handle window creation and placement, like =shackle.el=. This
-plugin summons windows defined by the user as "popups" by simply calling
+A minor-mode to help with the Emacs window flood. Designate any buffer to "popup" status, and it will stay out of your way. Disimss or summon it easily with one key. Useful for many things, including toggling REPLS, documentation, compilation or shell output, etc.
+
+Popup-buffers can place your popups for you, but it Works best in conjunction
+with some system to handle window creation and placement, like =shackle.el=.
+This plugin summons windows defined by the user as "popups" by simply calling
 =display-buffer=.
 
-Pre-designate any buffer (by name or major-mode) as a popup, and it will stay out of your way.  Dismiss and summon it easily with one key. Useful for many things, including bringing up REPLS, documentation, etc:
+You can pre-designate any buffer (by name or major-mode) as a popup, and the status will be applied after window creation. 
+
+Toggle a popup: 
 #+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-toggle-latest.gif]]
 
-Or you can cycle through all your popups:
+Cycle through all your popups:
 #+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-cycle.gif]]
 
-Demote a regular window to popup status:
+Turn a regular window into a popup:
 #+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-demote.gif]]
 
-Toggle all your popups:
+Or toggle all your popup buffers at once:
 #+ATTR_ORG: :width 500
 #+ATTR_HTML: :width 500px
 [[file:images/popup-buffers-toggle-all.gif]]
 
-Or promote a popup to regular window.
-
+You can also promote a popup to a normal window.
 * Usage
 To designate popups in your init file, see the customization section.
 
@@ -99,5 +102,14 @@ In keeping with the principle of least surprise, all popups are shown in the sam
 
 *** Popup placement controlled using =display-buffer-alist= or =shackle.el=:
 #+begin_src emacs-lisp
-  (setq popup-buffers-display-control nil)
+  (use-package shackle
+   :config
+   ;; -- shackle rules here --
+   )
+
+  (use-package poup-buffers
+  :config
+  ;; -- popup-buffers customizations here--
+
+  (setq popup-buffers-display-control nil))
 #+end_src
