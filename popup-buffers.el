@@ -1,11 +1,12 @@
-;;; popup-buffers.el --- Designate buffers as popups to summon or dismiss easily. -*- lexical-binding: t -*-
+;;; popup-buffers.el --- Summon and dismiss buffers easily. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2021  Karthik Chikmagalur
 
 ;; Author: Karthik Chikmagalur <karthik.chikmagalur@gmail.com>
-;; URL: https://github.com/karthink/popup-buffers
 ;; Version: 0.20
 ;; Package-Requires: ((emacs "25.3"))
+;; Keywords: convenience
+;; URL: https://github.com/karthink/popup-buffers
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -23,11 +24,14 @@
 ;; see <http://www.gnu.org/licenses/>.
 ;;
 ;;; Commentary:
-;;
-;; A hacked together solution to handle annoying popups in Emacs. Only works
-;; well in conjunction with some system to handle window creation and
-;; placement, like shackle.el. This plugin summons windows defined by
-;; the user as "popups" by simply calling `display-buffer'.
+
+;; This package provides a minor-mode to designate buffers as "popups" and
+;; summon and dismiss them with a key. Useful for many things, including
+;; toggling REPLS, documentation, compilation or shell output, etc. This package
+;; will place buffers on your screen, but it works best in conjunction with some
+;; system to handle window creation and placement, like shackle.el. Under the
+;; hood popup-buffers summons windows defined by the user as "popups" by simply
+;; calling `display-buffer'.
 ;;
 ;; COMMANDS:
 ;;
@@ -76,9 +80,10 @@ Will match against the Messages buffer, any buffer ending in Output*, and all he
   :group 'popup-buffers)
 
 (defcustom popup-buffers-mode-line '(:eval (propertize " POP" 'face 'mode-line-emphasis))
-  "String or sexp to show in the mode-line of popup-buffers. Can
-be a quoted list or function. Setting this to NIL removes the
-mode-line entirely from popup-buffers."
+  "String or sexp to show in the mode-line of popup-buffers.
+
+ Can be a quoted list or function. Setting this to NIL removes
+the mode-line entirely from popup-buffers."
   :group 'popup-buffers
   :type '(choice (string :tag "Literal text")
                  (sexp :tag "General `mode-line-format' entry")))
@@ -88,7 +93,7 @@ mode-line entirely from popup-buffers."
   :type 'integer)
 
 (defcustom popup-buffers-display-control t
-  "Whether popup-buffers should control the placement of popup windows. 
+  "Whether popup-buffers should control the placement of popup windows.
 Choices are:
 'user: The default. Only control placement of explicitly marked popups.
  nil : Do not control popup placement.
@@ -97,9 +102,10 @@ Choices are:
   :type '(choice 'user t nil))
 
 (defcustom popup-buffers-display-function #'popup-buffers-select-popup-at-bottom
-  "Function to use to display popup-buffers. Note that this is
-only invoked when `popup-buffers-display-control' is
-non-nil.
+  "Function to use to display popup-buffers.
+
+ Note that this is only invoked when
+`popup-buffers-display-control' is non-nil.
 
 This function accepts two arguments, a buffer and an action alist
 and displays the buffer. See (info \"(elisp) Buffer Display
@@ -127,9 +133,8 @@ Action Alists\") for details on the alist."
 'raised    : This is a POPUP buffer raised to regular status by the user.
 'user-popup: This is a regular buffer lowered to popup status by the user.")
 
-;;;###autoload
 (defun popup-buffers-select-popup-at-bottom (buffer &optional _alist)
-  "Display and switch to a popup-buffer at the bottom of the screen."
+  "Display and switch to popup-buffer BUFFER at the bottom of the screen."
   (let ((window (display-buffer-in-side-window
                  buffer
                  '((window-height . (lambda (win)
@@ -153,7 +158,7 @@ Action Alists\") for details on the alist."
 by popup-buffer. This is intended to be used in
 `display-buffer-alist'."
   (let ((buffer (if (bufferp buf) buf (get-buffer buf))))
-    (pcase popup-buffers-display-control 
+    (pcase popup-buffers-display-control
       ('user
        (with-current-buffer buffer
          (eq popup-buffers-popup-status 'user-popup)))
@@ -176,10 +181,10 @@ popup-buffers in the list of buffers TEST-BUFFER-LIST."
           (push (cons (get-buffer-window b) b)
                 open-popups))))))
 
-;;;###autoload
 (defun popup-buffers-update-popups ()
-  "Update the list of currently open popups. Meant to be added to
-`window-configuration-change-hook'."
+  "Update the list of currently open popups.
+
+ Meant to be added to `window-configuration-change-hook'."
   (let* ((open-buffers (mapcar #'window-buffer (window-list)))
          (open-popups (popup-buffers-find-popups open-buffers))
          (closed-popups (cl-set-difference popup-buffers-open-popup-alist
@@ -194,10 +199,10 @@ popup-buffers in the list of buffers TEST-BUFFER-LIST."
              (with-current-buffer buf
                (setq mode-line-format (popup-buffers-modified-mode-line)))))
 
-;;;###autoload
 (defun popup-buffers-find-buried-popups ()
-  "Update the list of currently buried popups. Meant to be run
-when starting `popup-buffers-mode'."
+  "Update the list of currently buried popups.
+
+ Meant to be run when starting command `popup-buffers-mode'."
   (setq popup-buffers-buried-popup-alist
         (popup-buffers-find-popups
             (cl-set-difference (buffer-list)
@@ -237,7 +242,6 @@ when starting `popup-buffers-mode'."
           (progn (display-buffer buf))
         (popup-buffers-open-latest)))))
 
-;;;###autoload
 (defun popup-buffers-modified-mode-line ()
   "Return modified mode-line string."
   (when popup-buffers-mode-line
@@ -259,15 +263,14 @@ the screen by `display-buffer' will not all be displayed."
   (while popup-buffers-buried-popup-alist
     (popup-buffers-open-latest)))
 
-;;;###autoload
 (defun popup-buffers-toggle-latest (&optional arg)
   "Toggle visibility of the last opened popup window.
 
-With prefix arg C-u, toggle visibility of the next popup windows
+With prefix ARG C-u, toggle visibility of the next popup windows
 while keeping the current one (FIXME: This behavior can be
 inconsistent.)
 
-With a double prefix arg C-u C-u, toggle all popup-windows. Note
+With a double prefix ARG C-u C-u, toggle all popup-windows. Note
 that only one buffer can be show in one 'slot', so it will
 display as many windows as it can."
   (interactive "p")
@@ -280,7 +283,6 @@ display as many windows as it can."
         (popup-buffers-raise-all)
       (popup-buffers-open-latest))))
 
-;;;###autoload
 (defun popup-buffers-cycle (&optional _arg)
   "Cycle visibility of popup windows one at a time.
 
@@ -298,7 +300,6 @@ direction."
               (append (cdr bufs) (cons (car bufs) nil))))
       (popup-buffers-open-latest))))
 
-;;;###autoload
 (defun popup-buffers-raise-popup (&optional buffer)
   "Raise a popup to regular status.
 If BUFFER is not specified,raise the current buffer."
@@ -311,9 +312,10 @@ If BUFFER is not specified,raise the current buffer."
     (delete-window (get-buffer-window buf))
     (pop-to-buffer buf)))
 
-;;;###autoload
 (defun popup-buffers-lower-to-popup (&optional buffer)
-  "Turn a regular window into a popup."
+  "Turn a regular buffer BUFFER into a popup.
+
+If BUFFER is not specified act on the current buffer instead."
   (interactive)
   (let ((buf (get-buffer (or buffer (current-buffer)))))
     (with-current-buffer buf
@@ -324,13 +326,14 @@ If BUFFER is not specified,raise the current buffer."
       (pop-to-buffer buf))
     (popup-buffers-update-popups)))
 
-;;;###autoload
 (defun popup-buffers-toggle-type (&optional buffer)
-  "Turn a popup into a regular window or vice-versa."
+  "Turn a popup buffer BUFFER into a regular window or vice-versa.
+
+If BUFFER is not specified act on the current buffer instead."
   (interactive)
   (let* ((buf (get-buffer (or buffer (current-buffer))))
          (popup-status (buffer-local-value 'popup-buffers-popup-status buf)))
-    (pcase popup-status 
+    (pcase popup-status
       ((or 'popup 'user-popup) (popup-buffers-raise-popup buf))
       (_ (popup-buffers-lower-to-popup buf)))))
 
