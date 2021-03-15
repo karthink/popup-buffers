@@ -1,5 +1,12 @@
 * Popup Buffers
 
+-----------------------------------------
+This package is superceded by https://github.com/karthink/popper, which does everything popup-buffers does and more. Popper.el is available on MELPA and will be maintained for the foreseeable future, so please use it instead.
+   
+`popup-buffers` is now archived.
+-----------------------------------------
+
+
 A minor-mode to help with the Emacs window flood. Designate any buffer to "popup" status, and it will stay out of your way. Disimss or summon it easily with one key. Useful for many things, including toggling REPLS, documentation, compilation or shell output, etc.
 
 Popup-buffers can place your popups for you, but it Works best in conjunction
